@@ -1,4 +1,4 @@
-module message-processor
+module messagio-test
 
 go 1.22.5
 
