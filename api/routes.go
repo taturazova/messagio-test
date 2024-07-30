@@ -7,6 +7,6 @@ import (
 func NewRouter() *mux.Router {
 	router := mux.NewRouter()
 	router.HandleFunc("/api/messages", CreateMessage).Methods("POST")
-	router.HandleFunc("/api/messages/stats", GetMessageStats).Methods("GET")
+	router.HandleFunc("/api/messages", GetMessageStats).Methods("GET")
 	return router
 }

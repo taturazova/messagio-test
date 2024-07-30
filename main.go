@@ -1,41 +1,37 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 	"os"
-	"time"
+	"strconv"
 
-	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"github.com/taturazova/messagio-test/api"
+	"github.com/taturazova/messagio-test/database"
+	"github.com/taturazova/messagio-test/kafka"
 )
 
-type Message struct {
-	Content   string    `json:"content"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
-var db *sql.DB
-
 func main() {
-	var err error
-	dbURL := os.Getenv("DATABASE_URL")
-	db, err = sql.Open("postgres", dbURL)
+	// Retrieve environment variables
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+
+	// Convert the string to an integer
+	port, err := strconv.Atoi(dbPort)
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	if err := db.Ping(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error converting PORT to integer: %v", err)
 	}
 
-	r := mux.NewRouter()
-	r.HandleFunc("/messages", createMessageHandler).Methods("POST")
+	database.ConnectDB(dbHost, dbUser, dbPassword, dbName, port)
+
+	r := api.NewRouter()
 
 	log.Println("Server started on :8080")
 	http.ListenAndServe(":8080", r)
+	kafka.StartConsumer()
+
 }
